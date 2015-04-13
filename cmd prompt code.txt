@@ -1,0 +1,13 @@
+**TO CONVERT FROM .ipynb to .html
+
+1. point the directory at this folder
+
+cd C:\Users\Stephen Bishop\Documents\Python Scripts\corpus
+
+2. run the conversion from ipynb to html
+
+ipython nbconvert Ron_Rockwell_analysis.ipynb
+
+**IF YOU WANT TO EDIT THE IPYTHON NOTEBOOK FILE IN A WEB BROWSER, enter this into the command prompt: 
+
+ipython notebook

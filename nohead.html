@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html>
+
+<body>
+  <div tabindex="-1" id="notebook" class="border-box-sizing">
+    <div class="container" id="notebook-container">
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Before we do anything, we&#39;ll import some libraries that we&#39;ll need for the exercise.</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">
+In&nbsp;[1]:
+</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight"><pre><span class="kn">import</span> <span class="nn">nltk</span>
+<span class="kn">from</span> <span class="nn">nltk.tokenize</span> <span class="kn">import</span> <span class="n">RegexpTokenizer</span>
+<span class="kn">from</span> <span class="nn">nltk.corpus</span> <span class="kn">import</span> <span class="n">stopwords</span>
+<span class="kn">from</span> <span class="nn">nltk</span> <span class="kn">import</span> <span class="n">FreqDist</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>I originally wrote my short story in Microsoft Word. To convert it to a text file, I just copied &amp; pasted the story from Word into a .txt in Notepad++. Now we have an easy-to-work-with format: the entirety of Ron Rockwell in just a text file. Let&#39;s open it with Python. </p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">
+In&nbsp;[2]:
+</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight"><pre><span class="n">storytext</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s">&quot;ronrockwell.txt&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Next, we&#39;ll write a function that further preprocesses the text. The output is an object that consists of all the words found in Ron Rockwell as word &quot;tokens&quot;. </p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">
+In&nbsp;[3]:
+</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">preprocess</span><span class="p">(</span><span class="n">sentence</span><span class="p">):</span>
+	<span class="n">sentence</span> <span class="o">=</span> <span class="n">sentence</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+	<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">RegexpTokenizer</span><span class="p">(</span><span class="s">r&#39;\w+&#39;</span><span class="p">)</span>
+	<span class="n">tokens</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">tokenize</span><span class="p">(</span><span class="n">sentence</span><span class="p">)</span>
+	<span class="k">return</span> <span class="s">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span>
+
+<span class="n">preprocessedStory</span> <span class="o">=</span> <span class="n">preprocess</span><span class="p">(</span><span class="n">storytext</span><span class="p">)</span>
+
+<span class="n">tokens</span> <span class="o">=</span> <span class="n">nltk</span><span class="o">.</span><span class="n">word_tokenize</span><span class="p">(</span><span class="n">preprocessedStory</span><span class="p">)</span>
+<span class="k">print</span> <span class="n">tokens</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">10</span><span class="p">]</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>
+[&apos;\xef&apos;, &apos;that&apos;, &apos;s&apos;, &apos;it&apos;, &apos;for&apos;, &apos;today&apos;, &apos;remember&apos;, &apos;homework&apos;, &apos;is&apos;, &apos;due&apos;]
+
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>You can look at what the tokens are in the output.</p>
+<p>Let&#39;s define a short function to identify an introductory metric for our story. The Lexical Diversity represents the ratio of unique words used to the total number of words in the story. </p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">
+In&nbsp;[4]:
+</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">lexical_diversity</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">text</span><span class="p">))</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+
+<span class="n">lexical_diversity</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt output_prompt">
+    Out[4]:</div>
+
+
+<div class="output_text output_subarea output_pyout">
+<pre>
+0.3222842139809649
+</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Let&#39;s check our math. How many tokens are there, total?</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">
+In&nbsp;[5]:
+</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight"><pre><span class="nb">len</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt output_prompt">
+    Out[5]:</div>
+
+
+<div class="output_text output_subarea output_pyout">
+<pre>
+3047
+</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>How many unique tokens are there in that set?</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">
+In&nbsp;[6]:
+</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight"><pre><span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">tokens</span><span class="p">))</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt output_prompt">
+    Out[6]:</div>
+
+
+<div class="output_text output_subarea output_pyout">
+<pre>
+982
+</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>982/3047 is equal to a .32 Lexical Diversity score.</p>
+<p>The FreqDist() function turns our set of tokens into a Frequency Distribution object, giving us the frequencies of all tokens in my story.</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">
+In&nbsp;[7]:
+</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight"><pre><span class="n">fdist1</span> <span class="o">=</span> <span class="n">FreqDist</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">fdist1</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>
+&lt;FreqDist: &apos;the&apos;: 108, &apos;and&apos;: 105, &apos;to&apos;: 98, &apos;a&apos;: 82, &apos;of&apos;: 69, &apos;ron&apos;: 61, &apos;in&apos;: 56, &apos;i&apos;: 47, &apos;was&apos;: 47, &apos;his&apos;: 45, ...&gt;
+
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Let&#39;s have a quick look at our first ten items</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">
+In&nbsp;[8]:
+</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight"><pre><span class="n">fdist1</span><span class="o">.</span><span class="n">items</span><span class="p">()[</span><span class="mi">0</span><span class="p">:</span><span class="mi">10</span><span class="p">]</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt output_prompt">
+    Out[8]:</div>
+
+
+<div class="output_text output_subarea output_pyout">
+<pre>
+[(&apos;the&apos;, 108),
+ (&apos;and&apos;, 105),
+ (&apos;to&apos;, 98),
+ (&apos;a&apos;, 82),
+ (&apos;of&apos;, 69),
+ (&apos;ron&apos;, 61),
+ (&apos;in&apos;, 56),
+ (&apos;i&apos;, 47),
+ (&apos;was&apos;, 47),
+ (&apos;his&apos;, 45)]
+</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Not many of those words are useful for analysis. &quot;The&quot;, &quot;and&quot;, &quot;to&quot;, &quot;a&quot;, and &quot;of&quot; are all used in the English language to provide basic sentence structure. We want to eliminate these kinds of words and only focus on the words that have significance in giving us information about the story. These words are called &quot;stopwords&quot;, and we are going to eliminate them by importing a pre-made list of stopwords and eliminating them from our list of word tokens.</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">
+In&nbsp;[9]:
+</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight"><pre><span class="kn">from</span> <span class="nn">nltk.corpus</span> <span class="kn">import</span> <span class="n">stopwords</span>
+<span class="n">stop</span> <span class="o">=</span> <span class="n">stopwords</span><span class="o">.</span><span class="n">words</span><span class="p">(</span><span class="s">&#39;english&#39;</span><span class="p">)</span>
+<span class="n">remstop</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">tokens</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">stop</span><span class="p">]</span>
+<span class="n">remstop</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">20</span><span class="p">]</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt output_prompt">
+    Out[9]:</div>
+
+
+<div class="output_text output_subarea output_pyout">
+<pre>
+[&apos;\xef&apos;,
+ &apos;today&apos;,
+ &apos;remember&apos;,
+ &apos;homework&apos;,
+ &apos;due&apos;,
+ &apos;next&apos;,
+ &apos;class&apos;,
+ &apos;forget&apos;,
+ &apos;test&apos;,
+ &apos;friday&apos;,
+ &apos;everything&apos;,
+ &apos;ve&apos;,
+ &apos;learned&apos;,
+ &apos;chain&apos;,
+ &apos;rule&apos;,
+ &apos;ll&apos;,
+ &apos;office&apos;,
+ &apos;wednesday&apos;,
+ &apos;twelve&apos;,
+ &apos;two&apos;]
+</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>How many total words are left?</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">
+In&nbsp;[10]:
+</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight"><pre><span class="nb">len</span><span class="p">(</span><span class="n">remstop</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt output_prompt">
+    Out[10]:</div>
+
+
+<div class="output_text output_subarea output_pyout">
+<pre>
+1542
+</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>How many unique words made it?</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">
+In&nbsp;[11]:
+</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight"><pre><span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">remstop</span><span class="p">))</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt output_prompt">
+    Out[11]:</div>
+
+
+<div class="output_text output_subarea output_pyout">
+<pre>
+876
+</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Let&#39;s turn our stopword-free list of tokens into a Frequency Distribution object.</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">
+In&nbsp;[12]:
+</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight"><pre><span class="n">fdist2</span> <span class="o">=</span> <span class="n">FreqDist</span><span class="p">(</span><span class="n">remstop</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">fdist2</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>
+&lt;FreqDist: &apos;ron&apos;: 61, &apos;molly&apos;: 25, &apos;calculus&apos;: 16, &apos;students&apos;: 15, &apos;class&apos;: 13, &apos;time&apos;: 13, &apos;mathematics&apos;: 10, &apos;really&apos;: 10, &apos;wasn&apos;: 10, &apos;know&apos;: 9, ...&gt;
+
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+                Now we're getting somewhere. Let's see a list of the top 20 most common non-stopwords in my short story, Ron Rockwell.
+                
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">
+In&nbsp;[13]:
+</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight"><pre><span class="n">fdist2</span><span class="o">.</span><span class="n">items</span><span class="p">()[</span><span class="mi">0</span><span class="p">:</span><span class="mi">20</span><span class="p">]</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt output_prompt">
+    Out[13]:</div>
+
+
+<div class="output_text output_subarea output_pyout">
+<pre>
+[(&apos;ron&apos;, 61),
+ (&apos;molly&apos;, 25),
+ (&apos;calculus&apos;, 16),
+ (&apos;students&apos;, 15),
+ (&apos;class&apos;, 13),
+ (&apos;time&apos;, 13),
+ (&apos;mathematics&apos;, 10),
+ (&apos;really&apos;, 10),
+ (&apos;wasn&apos;, 10),
+ (&apos;know&apos;, 9),
+ (&apos;life&apos;, 9),
+ (&apos;office&apos;, 9),
+ (&apos;professor&apos;, 9),
+ (&apos;took&apos;, 9),
+ (&apos;college&apos;, 8),
+ (&apos;wanted&apos;, 8),
+ (&apos;felt&apos;, 7),
+ (&apos;get&apos;, 7),
+ (&apos;like&apos;, 7),
+ (&apos;things&apos;, 7)]
+</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>This makes a lot more sense. The top two most common words are the names of the two main characters, Ron and Molly. The third most common word, &quot;calculus&quot;, is how they are connected: Ron is the professor for Molly&#39;s calculus class. The next four most common words, &quot;students&quot;, &quot;class&quot;, &quot;time&quot;, and &quot;mathematics&quot; seem to make sense in this context.</p>
+<p>Ok, that&#39;s pretty neat. Now let&#39;s take a measure of how rich our vocabulary was with the stopwords removed.</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">
+In&nbsp;[14]:
+</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight"><pre><span class="n">lexical_diversity</span><span class="p">(</span><span class="n">remstop</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt output_prompt">
+    Out[14]:</div>
+
+
+<div class="output_text output_subarea output_pyout">
+<pre>
+0.5680933852140078
+</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>That&#39;s higher than the .32 score we saw earlier. Removing all those common stopwords makes obviously makes our use of language seem more diverse.</p>
+<p>Ok, so in order to save some of this data for later--in this case, the top 20 most common non-stopwords, we&#39;ll turn that into a list, which we&#39;ll then write out as a .csv file.</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">
+In&nbsp;[15]:
+</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight"><pre><span class="n">array</span> <span class="o">=</span> <span class="n">fdist2</span><span class="o">.</span><span class="n">items</span><span class="p">()[</span><span class="mi">0</span><span class="p">:</span><span class="mi">20</span><span class="p">]</span>
+<span class="n">mylist</span> <span class="o">=</span> <span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">array</span><span class="p">]</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Finally, we can take this data and export it as a .csv file for further analysis in R or Excel.</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">
+In&nbsp;[16]:
+</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight"><pre><span class="kn">import</span> <span class="nn">csv</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s">&#39;newfile.csv&#39;</span><span class="p">,</span> <span class="s">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">result</span><span class="p">:</span>
+    <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">dialect</span><span class="o">=</span><span class="s">&#39;excel&#39;</span><span class="p">)</span>
+    <span class="n">writer</span><span class="o">.</span><span class="n">writerows</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s">&#39;tokens.csv&#39;</span><span class="p">,</span> <span class="s">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">result</span><span class="p">:</span>
+    <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">dialect</span><span class="o">=</span><span class="s">&#39;excel&#39;</span><span class="p">)</span>
+    <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">(</span><span class="n">remstop</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>You can download the files here as proof that this worked: </p>
+</div>
+</div>
+</div>
+    </div>
+  </div>
+</body>
+</html>
